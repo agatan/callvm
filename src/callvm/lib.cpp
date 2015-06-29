@@ -18,6 +18,8 @@ void parse_and_codegen(std::string const& src,
                        codegen::llvm_codegenerator& gen) {
     parser::callvm_parser parser;
     auto ast = parser.parse(src);
-    boost::apply_visitor(gen, ast);
+    if(!gen.generate(ast, "func")) {
+        std::cerr << "null 6" << std::endl;
+    }
 }
 }  // namespace callvm

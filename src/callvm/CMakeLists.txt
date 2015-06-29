@@ -5,4 +5,4 @@ endif ()
 
 file(GLOB_RECURSE CPPFILES *.cpp)
 add_library(callvm-lib ${CPPFILES})
-target_link_libraries(callvm-lib ${Boost_LIBRARIES})
+target_link_libraries(callvm-lib ${REQUIRED_LLVM_LIBS} ${Boost_LIBRARIES})
