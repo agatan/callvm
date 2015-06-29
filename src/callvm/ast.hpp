@@ -3,16 +3,20 @@
 
 #include <boost/variant/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
+#include <boost/variant/static_visitor.hpp>
 
 #include <string>
 #include <memory>
 
+namespace callvm {
+namespace ast {
+
 class int_expr;
-class float_expr;
+class double_expr;
 class binop_expr;
 
-using any_expr = boost::variant<int_expr, float_expr,
-                       boost::recursive_wrapper<binop_expr>>;
+using any_expr =
+    boost::variant<int_expr, double_expr, boost::recursive_wrapper<binop_expr>>;
 
 class int_expr {
    private:
@@ -23,13 +27,13 @@ class int_expr {
     int get_val() const { return val; }
 };
 
-class float_expr {
+class double_expr {
    private:
-    float val;
+    double val;
 
    public:
-    float_expr(float x) : val(x) {}
-    float get_val() const { return val; }
+    double_expr(float x) : val(x) {}
+    double get_val() const { return val; }
 };
 
 class binop_expr {
@@ -41,6 +45,20 @@ class binop_expr {
    public:
     binop_expr(std::string const& op, any_expr lhs, any_expr rhs)
         : op(op), lhs(lhs), rhs(rhs) {}
+    std::string const& get_op() const { return op; }
+    any_expr const& get_lhs() const { return lhs; }
+    any_expr const& get_rhs() const { return rhs; }
 };
 
+namespace visitor {
+class stringizer : public boost::static_visitor<std::string> {
+   public:
+    std::string operator()(int_expr const&) const;
+    std::string operator()(double_expr const&) const;
+    std::string operator()(binop_expr const&) const;
+};
+}  // namespace visitor
+
+}  // namespace ast
+}  // namespace callvm
 #endif
