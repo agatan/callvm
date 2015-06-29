@@ -22,4 +22,9 @@ void parse_and_codegen(std::string const& src,
         std::cerr << "null 6" << std::endl;
     }
 }
+
+ast::any_expr parse(std::string const& src) {
+    parser::callvm_parser parser;
+    return parser.parse(src);
+}
 }  // namespace callvm

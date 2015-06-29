@@ -45,9 +45,9 @@ class callvm_grammar
         add_expr =
             mul_expr[_val = _1] >>
             *(('+' >>
-               primary)[_val = phx::construct<ast::binop_expr>("+", _val, _1)] |
+               mul_expr)[_val = phx::construct<ast::binop_expr>("+", _val, _1)] |
               ('-' >>
-               primary)[_val = phx::construct<ast::binop_expr>("-", _val, _1)]);
+               mul_expr)[_val = phx::construct<ast::binop_expr>("-", _val, _1)]);
         expression %= add_expr;
     }
 

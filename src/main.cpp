@@ -1,43 +1,42 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Verifier.h>
+#include <llvm/Support/raw_os_ostream.h>
 #include <iostream>
 #include <fstream>
 #include <iterator>
 
 #include "callvm/lib.h"
+#include "callvm/ast.hpp"
 #include "callvm/codegen.h"
 
-void parse_and_print_from_file(std::string const&);
-void parse_and_print_from_stdin();
+bool loop(callvm::codegen::llvm_codegenerator&, int);
 
 int main(int argc, char const* argv[]) {
-    if (argc > 1) {
-        parse_and_print_from_file(argv[1]);
-    }
+    callvm::codegen::llvm_codegenerator gen("toplevel",
+                                            llvm::getGlobalContext());
+    int cnt = 0;
+    while (loop(gen, cnt++));
+
+    std::ofstream out(argv[1], std::ios_base::out);
+    llvm::raw_os_ostream o(out);
+    gen.get_module()->print(o, nullptr);
     return 0;
 }
 
-void parse_and_print_from_file(std::string const& name) {
-    std::ifstream in(name, std::ios_base::in);
-    if (!in) {
-        std::cerr << "Error: Couldn't open file: " << name << std::endl;
-        return;
+bool loop(callvm::codegen::llvm_codegenerator& gen, int cnt) {
+    std::string line;
+    std::cout << "user> ";
+    std::flush(std::cout);
+    std::getline(std::cin, line);
+    if (line == "quit") return false;
+    auto ast = callvm::parse(line);
+    std::cout << callvm::ast::visitor::stringize(ast) << std::endl;
+
+    if (!gen.generate(ast, "func" + std::to_string(cnt++))) {
+        std::cerr << "Error: failed code generation" << std::endl;
+        return true;
     }
 
-    std::string storage;
-    in.unsetf(std::ios::skipws);
-    std::copy(std::istream_iterator<char>(in), std::istream_iterator<char>(),
-              std::back_inserter(storage));
-
-    std::cout << "parsed: " << callvm::parse_and_stringize(storage) << std::endl;
-
-    callvm::codegen::llvm_codegenerator gen("toplevel", llvm::getGlobalContext());
-    callvm::parse_and_codegen(storage, gen);
-    auto mod = gen.get_module();
-    std::cout << mod->getName().str() << std::endl;
-    if (!llvm::verifyModule(*mod)) {
-        std::cerr << "something goes wrong" << std::endl;
-        return;
-    }
-    mod->dump();
+    gen.get_module()->dump();
+    return true;
 }

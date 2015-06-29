@@ -7,6 +7,7 @@
 namespace callvm {
 std::string parse_and_stringize(std::string const&);
 void parse_and_codegen(std::string const&, codegen::llvm_codegenerator&);
+ast::any_expr parse(std::string const&);
 }  // namespace callvm
 
 #endif
