@@ -1,6 +1,7 @@
 #include "lib.h"
 #include "ast.hpp"
 #include "parser.hpp"
+#include "codegen.h"
 
 #include <string>
 

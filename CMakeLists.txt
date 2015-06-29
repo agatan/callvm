@@ -43,6 +43,7 @@ execute_process(
 
 include_directories(${LLVM_INCLUDE_DIRS})
 link_directories(${LLVM_LIB_DIRS})
+add_definitions(-D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS)
 
 message(STATUS "LLVM version: ${LLVM_VERSION}")
 message(STATUS "LLVM includedir: ${LLVM_INCLUDE_DIRS}")
