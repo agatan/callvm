@@ -1,5 +1,5 @@
 #include "lib.h"
-#include "ast.hpp"
+#include "ast/ast.hpp"
 #include "parser.hpp"
 #include "codegen.h"
 

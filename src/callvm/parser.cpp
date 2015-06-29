@@ -1,5 +1,5 @@
 #include "parser.hpp"
-#include "ast.hpp"
+#include "ast/ast.hpp"
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>

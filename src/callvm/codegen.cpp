@@ -1,5 +1,5 @@
 #include "codegen.h"
-#include "ast.hpp"
+#include "ast/ast.hpp"
 
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/DerivedTypes.h>

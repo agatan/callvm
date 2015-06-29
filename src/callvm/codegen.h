@@ -1,7 +1,7 @@
 #ifndef __CALLVM_CODEGEN_H_
 #define __CALLVM_CODEGEN_H_
 
-#include "ast.hpp"
+#include "ast/ast.hpp"
 
 #include <boost/variant/static_visitor.hpp>
 #include <llvm/IR/Module.h>

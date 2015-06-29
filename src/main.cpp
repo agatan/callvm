@@ -6,7 +6,7 @@
 #include <iterator>
 
 #include "callvm/lib.h"
-#include "callvm/ast.hpp"
+#include "callvm/ast/ast.hpp"
 #include "callvm/codegen.h"
 
 bool loop(callvm::codegen::llvm_codegenerator&, int);
