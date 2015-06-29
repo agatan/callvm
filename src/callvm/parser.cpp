@@ -1,6 +1,8 @@
 #include "parser.hpp"
 #include "ast/ast.hpp"
 
+#define BOOST_SPIRIT_USE_PHOENIX_V3
+
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 #include <boost/spirit/include/support_line_pos_iterator.hpp>
@@ -21,30 +23,42 @@ inline auto line_pos_iterator(Iter i) {
     return boost::spirit::line_pos_iterator<Iter>(i);
 }
 
-// template <class Iter>
-// struct set_position {
-//     Iter const before;
-//     Iter const after;
-//     Iter const src;
-//
-//     set_position(Iter const before, Iter const after, Iter const src)
-//         : before(before), after(after), src(src) {}
-//
-//     template <class T>
-//     void operator()(T &node) const {
-//         auto d = std::distance(before.base(), after.base());
-//         node.line = boost::spirit::get_line(before);
-//         node.col = boost::spirit::get_column(src, before);
-//         node.length = std::min(0, d);
-//     }
-// };
+template <class Iter>
+struct set_position : public boost::static_visitor<> {
+    Iter const before;
+    Iter const after;
+    Iter const src;
 
-template <class Iterator>
-void handler(boost::fusion::vector<
-        Iterator& ,
-        Iterator const&,
-        Iterator const&> args
-        ) {}
+    set_position(Iter const before, Iter const after, Iter const src)
+        : before(before), after(after), src(src) {}
+
+    template <class T>
+    void operator()(T &node) const {
+        auto d = std::distance(before.base(), after.base());
+        node.line = boost::spirit::get_line(before);
+        node.col = boost::spirit::get_column(src, before);
+        node.length = d < 0 ? 0 : d;
+    }
+};
+
+template <typename Iter>
+struct annotation_f {
+    typedef void result_type;
+    annotation_f(Iter const src) : src(src) {}
+
+    template <typename Val, typename First, typename Last>
+    void operator()(Val &v, First f, Last l) const {
+        do_annotate(v, f, l);
+    }
+
+   private:
+    Iter const src;
+
+    void do_annotate(ast::any_expr &ast, Iter f, Iter l) const {
+        set_position<Iter> s(f, l, src);
+        boost::apply_visitor(s, ast);
+    }
+};
 
 }  // namespace helper
 // }}}
@@ -59,7 +73,8 @@ template <class Iter>
 class callvm_grammar
     : public qi::grammar<Iter, ast::any_expr(), ascii::space_type> {
    public:
-    callvm_grammar(Iter const src) : callvm_grammar::base_type(expression) {
+    callvm_grammar(Iter const src)
+        : callvm_grammar::base_type(expression), annotate(src) {
         int_expr = qi::int_[_val = phx::construct<ast::int_expr>(_1)];
         double_expr =
             qi::real_parser<double, qi::strict_real_policies<double>>()
@@ -79,13 +94,14 @@ class callvm_grammar
                                            "-", _val, _1)]);
         expression %= add_expr;
 
-        qi::on_success(
-            primary, helper::handler);
+        qi::on_success(primary, annotate(_val, _1, _3));
     }
 
    private:
     template <class T>
     using rule = qi::rule<Iter, T, ascii::space_type>;
+
+    phx::function<helper::annotation_f<Iter>> annotate;
 
     rule<ast::int_expr()> int_expr;
     rule<ast::double_expr()> double_expr;
