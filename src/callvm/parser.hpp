@@ -10,7 +10,7 @@ namespace callvm {
 namespace parser {
 class callvm_parser final {
    public:
-    ast::node::any_expr parse(std::string const& src) const;
+    ast::any_expr parse(std::string const& src) const;
 };
 }  // namespace parser
 }  // namespace callvm

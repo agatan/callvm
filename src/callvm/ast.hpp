@@ -23,6 +23,7 @@ class int_expr {
     int val;
 
    public:
+    int_expr() : val(0) {}
     int_expr(int v) : val(v) {}
     int get_val() const { return val; }
 };
@@ -32,6 +33,7 @@ class double_expr {
     double val;
 
    public:
+    double_expr() : val(0) {}
     double_expr(float x) : val(x) {}
     double get_val() const { return val; }
 };
