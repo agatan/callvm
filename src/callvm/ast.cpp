@@ -20,6 +20,11 @@ namespace visitor {
             " " + boost::apply_visitor(stringizer(), bin.get_rhs()) +
             ")";
     }
+
+    std::string stringize(ast::any_expr const& ast) {
+        stringizer s;
+        return boost::apply_visitor(s, ast);
+    }
 }  // namespace visitor
 }  // namespace ast
 }  // namespace callvm

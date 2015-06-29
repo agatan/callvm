@@ -59,6 +59,8 @@ class stringizer : public boost::static_visitor<std::string> {
     std::string operator()(double_expr const&) const;
     std::string operator()(binop_expr const&) const;
 };
+
+std::string stringize(ast::any_expr const&);
 }  // namespace visitor
 
 }  // namespace ast
