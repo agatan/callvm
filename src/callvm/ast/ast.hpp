@@ -8,6 +8,8 @@
 #include <string>
 #include <memory>
 
+#include "ast_base.hpp"
+
 namespace callvm {
 namespace ast {
 
@@ -18,7 +20,7 @@ class binop_expr;
 using any_expr =
     boost::variant<int_expr, double_expr, boost::recursive_wrapper<binop_expr>>;
 
-class int_expr {
+class int_expr : public ast_base {
    private:
     int val;
 
@@ -28,7 +30,7 @@ class int_expr {
     int get_val() const { return val; }
 };
 
-class double_expr {
+class double_expr : public ast_base {
    private:
     double val;
 
@@ -38,7 +40,7 @@ class double_expr {
     double get_val() const { return val; }
 };
 
-class binop_expr {
+class binop_expr : public ast_base {
    private:
     std::string op;
     any_expr lhs;

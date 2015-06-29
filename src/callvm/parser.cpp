@@ -4,8 +4,12 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 #include <boost/spirit/include/support_line_pos_iterator.hpp>
+#include <boost/variant/variant.hpp>
+#include <boost/variant/static_visitor.hpp>
+#include <boost/fusion/include/vector.hpp>
 
 #include <string>
+#include <type_traits>
 
 namespace callvm {
 namespace parser {
@@ -16,6 +20,32 @@ template <typename Iter>
 inline auto line_pos_iterator(Iter i) {
     return boost::spirit::line_pos_iterator<Iter>(i);
 }
+
+// template <class Iter>
+// struct set_position {
+//     Iter const before;
+//     Iter const after;
+//     Iter const src;
+//
+//     set_position(Iter const before, Iter const after, Iter const src)
+//         : before(before), after(after), src(src) {}
+//
+//     template <class T>
+//     void operator()(T &node) const {
+//         auto d = std::distance(before.base(), after.base());
+//         node.line = boost::spirit::get_line(before);
+//         node.col = boost::spirit::get_column(src, before);
+//         node.length = std::min(0, d);
+//     }
+// };
+
+template <class Iterator>
+void handler(boost::fusion::vector<
+        Iterator& ,
+        Iterator const&,
+        Iterator const&> args
+        ) {}
+
 }  // namespace helper
 // }}}
 
@@ -29,7 +59,7 @@ template <class Iter>
 class callvm_grammar
     : public qi::grammar<Iter, ast::any_expr(), ascii::space_type> {
    public:
-    callvm_grammar() : callvm_grammar::base_type(expression) {
+    callvm_grammar(Iter const src) : callvm_grammar::base_type(expression) {
         int_expr = qi::int_[_val = phx::construct<ast::int_expr>(_1)];
         double_expr =
             qi::real_parser<double, qi::strict_real_policies<double>>()
@@ -42,13 +72,15 @@ class callvm_grammar
                primary)[_val = phx::construct<ast::binop_expr>("*", _val, _1)] |
               ('/' >>
                primary)[_val = phx::construct<ast::binop_expr>("/", _val, _1)]);
-        add_expr =
-            mul_expr[_val = _1] >>
-            *(('+' >>
-               mul_expr)[_val = phx::construct<ast::binop_expr>("+", _val, _1)] |
-              ('-' >>
-               mul_expr)[_val = phx::construct<ast::binop_expr>("-", _val, _1)]);
+        add_expr = mul_expr[_val = _1] >>
+                   *(('+' >> mul_expr)[_val = phx::construct<ast::binop_expr>(
+                                           "+", _val, _1)] |
+                     ('-' >> mul_expr)[_val = phx::construct<ast::binop_expr>(
+                                           "-", _val, _1)]);
         expression %= add_expr;
+
+        qi::on_success(
+            primary, helper::handler);
     }
 
    private:
@@ -67,7 +99,7 @@ ast::any_expr callvm_parser::parse(std::string const &src) const {
     auto begin = helper::line_pos_iterator(std::begin(src));
     using iterator_t = decltype(begin);
     auto end = helper::line_pos_iterator(std::end(src));
-    callvm_grammar<iterator_t> grammar;
+    callvm_grammar<iterator_t> grammar(begin);
     ast::any_expr result;
 
     if (!qi::phrase_parse(begin, end, grammar, ascii::space, result) ||
