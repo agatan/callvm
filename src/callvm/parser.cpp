@@ -31,8 +31,9 @@ class callvm_grammar
    public:
     callvm_grammar() : callvm_grammar::base_type(expression) {
         int_expr = qi::int_[_val = phx::construct<ast::int_expr>(_1)];
-        double_expr = qi::real_parser<double, qi::strict_real_policies<double>>()
-            [_val = phx::construct<ast::double_expr>(_1)];
+        double_expr =
+            qi::real_parser<double, qi::strict_real_policies<double>>()
+                [_val = phx::construct<ast::double_expr>(_1)];
         primary %=
             double_expr | int_expr | ('(' >> expression >> ')')[_val = _1];
         mul_expr =
