@@ -32,7 +32,7 @@ bool loop(callvm::codegen::llvm_codegenerator& gen, int cnt) {
     auto ast = callvm::parse(line);
     std::cout << callvm::ast::visitor::stringize(ast) << std::endl;
 
-    if (!gen.generate(*ast, "func" + std::to_string(cnt++))) {
+    if (!gen.generate(ast, "func" + std::to_string(cnt++))) {
         std::cerr << "Error: failed code generation" << std::endl;
         return true;
     }
