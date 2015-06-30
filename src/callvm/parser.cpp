@@ -23,6 +23,15 @@ inline auto line_pos_iterator(Iter i) {
     return boost::spirit::line_pos_iterator<Iter>(i);
 }
 
+template <class T, class Iter>
+void set_position_impl(T &node, Iter const before, Iter const after,
+                       Iter const src) {
+    auto d = std::distance(before.base(), after.base());
+    node.line = boost::spirit::get_line(before);
+    node.col = boost::spirit::get_column(src, before);
+    node.length = d < 0 ? 0 : d;
+}
+
 template <class Iter>
 struct set_position : public boost::static_visitor<> {
     Iter const before;
@@ -34,10 +43,7 @@ struct set_position : public boost::static_visitor<> {
 
     template <class T>
     void operator()(T &node) const {
-        auto d = std::distance(before.base(), after.base());
-        node.line = boost::spirit::get_line(before);
-        node.col = boost::spirit::get_column(src, before);
-        node.length = d < 0 ? 0 : d;
+        set_position_impl(node, before, after, src);
     }
 };
 
@@ -57,6 +63,11 @@ struct annotation_f {
     void do_annotate(ast::any_expr &ast, Iter f, Iter l) const {
         set_position<Iter> s(f, l, src);
         boost::apply_visitor(s, ast);
+    }
+
+    template <typename T>
+    void do_annotate(T &ast, Iter f, Iter l) const {
+        set_position_impl(ast, f, l, src);
     }
 };
 
@@ -94,7 +105,12 @@ class callvm_grammar
                                            "-", _val, _1)]);
         expression %= add_expr;
 
+        qi::on_success(int_expr, annotate(_val, _1, _3));
+        qi::on_success(double_expr, annotate(_val, _1, _3));
         qi::on_success(primary, annotate(_val, _1, _3));
+        qi::on_success(mul_expr, annotate(_val, _1, _3));
+        qi::on_success(add_expr, annotate(_val, _1, _3));
+        qi::on_success(expression, annotate(_val, _1, _3));
     }
 
    private:
