@@ -62,18 +62,18 @@ class double_expr : public expr_base {
 class binop_expr : public expr_base {
    private:
     std::string op;
-    std::shared_ptr<any_expr> lhs;
-    std::shared_ptr<any_expr> rhs;
+    any_expr lhs;
+    any_expr rhs;
 
    public:
-    binop_expr(std::string const& op, std::shared_ptr<any_expr>& lhs, std::shared_ptr<any_expr>& rhs)
+    binop_expr(std::string const& op, any_expr& lhs, any_expr& rhs)
         : expr_base(semantics::type::unknow_type::create()),
           op(op),
           lhs(lhs),
           rhs(rhs) {}
     std::string const& get_op() const { return op; }
-    std::shared_ptr<any_expr> const& get_lhs() const { return lhs; }
-    std::shared_ptr<any_expr> const& get_rhs() const { return rhs; }
+    any_expr const& get_lhs() const { return lhs; }
+    any_expr const& get_rhs() const { return rhs; }
 };
 
 namespace visitor {
@@ -84,7 +84,7 @@ class stringizer : public boost::static_visitor<std::string> {
     std::string operator()(binop_expr const&) const;
 };
 
-std::string stringize(std::shared_ptr<ast::any_expr> const);
+std::string stringize(ast::any_expr const);
 }  // namespace visitor
 
 }  // namespace ast

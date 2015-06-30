@@ -8,6 +8,7 @@
 
 #include <string>
 #include <memory>
+#include <iostream>
 
 namespace callvm {
 std::string parse_and_stringize(std::string const& src) {
@@ -20,12 +21,12 @@ void parse_and_codegen(std::string const& src,
                        codegen::llvm_codegenerator& gen) {
     parser::callvm_parser parser;
     auto ast = parser.parse(src);
-    if(!gen.generate(*ast, "func")) {
+    if(!gen.generate(ast, "func")) {
         std::cerr << "null 6" << std::endl;
     }
 }
 
-std::shared_ptr<ast::any_expr> parse(std::string const& src) {
+ast::any_expr parse(std::string const& src) {
     parser::callvm_parser parser;
     return parser.parse(src);
 }
