@@ -2,6 +2,7 @@
 #include "ast/ast.hpp"
 #include "parser.hpp"
 #include "codegen.h"
+#include "semantics/type_checker.h"
 
 #include <boost/variant/apply_visitor.hpp>
 
@@ -27,4 +28,5 @@ ast::any_expr parse(std::string const& src) {
     parser::callvm_parser parser;
     return parser.parse(src);
 }
+
 }  // namespace callvm
