@@ -8,13 +8,17 @@ set(CALLVM_VERSION_MINOR 0)
 set(CALLVM_VERSION_TEENY 1)
 set(PACKAGE_VERSION "${CALLVM_VERSION_MAJOR}.${CALLVM_VERSION_MINOR}.${CALLVM_VERSION_TEENY}")
 
-set(CALLVM_LLVM_CONFIG "llvm-config")
-if (EXISTS "/usr/bin/${CALLVM_LLVM_CONFIG}")
-    set(CALLVM_LLVM_CONFIG "/usr/bin/${CALLVM_LLVM_CONFIG}")
-elseif (EXISTS "/usr/local/bin/${CALLVM_LLVM_CONFIG}")
-    set(CALLVM_LLVM_CONFIG "/usr/local/bin/${CALLVM_LLVM_CONFIG}")
-else ()
-    message(FATAL_ERROR "'${CALLVM_LLVM_CONFIG}' is not found.")
+execute_process(
+    COMMAND
+    which llvm-config
+    OUTPUT_VARIABLE
+    CALLVM_LLVM_CONFIG
+    ERROR_VARIABLE
+    CALLVM_LLVM_CONFIG_ERROR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+if(CALLVM_LLVM_CONFIG_ERROR)
+    message(FATAL_ERROR "'llvm-config' is not found: ${CALLVM_LLVM_CONFIG_ERROR}")
 endif()
 message(STATUS "detected for llvm-config: ${CALLVM_LLVM_CONFIG}")
 
