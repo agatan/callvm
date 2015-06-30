@@ -50,11 +50,11 @@ llvm::Value* llvm_codegenerator::operator()(ast::double_expr const& x) {
 }
 
 llvm::Value* llvm_codegenerator::operator()(ast::binop_expr const& binop) {
-    auto lhs = boost::apply_visitor(*this, binop.get_lhs());
+    auto lhs = boost::apply_visitor(*this, *binop.get_lhs());
     if (!lhs) {
         std::cerr << "null 4" << std::endl;
     }
-    auto rhs = boost::apply_visitor(*this, binop.get_rhs());
+    auto rhs = boost::apply_visitor(*this, *binop.get_rhs());
     if (!rhs) {
         std::cerr << "null 5" << std::endl;
     }

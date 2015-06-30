@@ -16,14 +16,14 @@ std::string stringizer::operator()(double_expr const& x) const {
 }
 
 std::string stringizer::operator()(binop_expr const& bin) const {
-    return "(" + boost::apply_visitor(stringizer(), bin.get_lhs()) + " " +
+    return "(" + boost::apply_visitor(stringizer(), *bin.get_lhs()) + " " +
            bin.get_op() + " " +
-           boost::apply_visitor(stringizer(), bin.get_rhs()) + ")";
+           boost::apply_visitor(stringizer(), *bin.get_rhs()) + ")";
 }
 
-std::string stringize(ast::any_expr const& ast) {
+std::string stringize(std::shared_ptr<ast::any_expr> const ast) {
     stringizer s;
-    return boost::apply_visitor(s, ast);
+    return boost::apply_visitor(s, *ast);
 }
 }  // namespace visitor
 }  // namespace ast

@@ -12,6 +12,7 @@
 
 #include <string>
 #include <type_traits>
+#include <memory>
 
 namespace callvm {
 namespace parser {
@@ -66,6 +67,11 @@ struct annotation_f {
     }
 
     template <typename T>
+    void do_annotate(std::shared_ptr<T> &ast, Iter f, Iter l) const {
+        do_annotate(*ast);
+    }
+
+    template <typename T>
     void do_annotate(T &ast, Iter f, Iter l) const {
         set_position_impl(ast, f, l, src);
     }
@@ -82,35 +88,43 @@ using namespace qi::labels;
 
 template <class Iter>
 class callvm_grammar
-    : public qi::grammar<Iter, ast::any_expr(), ascii::space_type> {
+    : public qi::grammar<Iter, std::shared_ptr<ast::any_expr>(),
+                         ascii::space_type> {
+    template <typename T>
+    struct make_shared_ptr_lazy {
+        typedef std::shared_ptr<T> result_type;
+
+        template <typename... Args>
+        auto operator()(Args &&... args) const -> result_type {
+            return std::make_shared<T>(std::forward<Args>(args)...);
+        }
+    };
+
+    template <typename T, typename... Args>
+    auto make_shared_ptr(Args &&... args) {
+        return phx::function<make_shared_ptr_lazy<T>>()(std::forward<Args>(args)...);
+    }
+
    public:
     callvm_grammar(Iter const src)
         : callvm_grammar::base_type(expression), annotate(src) {
-        int_expr = qi::int_[_val = phx::construct<ast::int_expr>(_1)];
+        int_expr = qi::int_[_val = make_shared_ptr<ast::int_expr>(_1)];
         double_expr =
             qi::real_parser<double, qi::strict_real_policies<double>>()
-                [_val = phx::construct<ast::double_expr>(_1)];
-        primary %=
-            double_expr | int_expr | ('(' >> expression >> ')')[_val = _1];
-        mul_expr =
-            primary[_val = _1] >>
-            *(('*' >>
-               primary)[_val = phx::construct<ast::binop_expr>("*", _val, _1)] |
-              ('/' >>
-               primary)[_val = phx::construct<ast::binop_expr>("/", _val, _1)]);
-        add_expr = mul_expr[_val = _1] >>
-                   *(('+' >> mul_expr)[_val = phx::construct<ast::binop_expr>(
-                                           "+", _val, _1)] |
-                     ('-' >> mul_expr)[_val = phx::construct<ast::binop_expr>(
-                                           "-", _val, _1)]);
-        expression %= add_expr;
+                [_val = make_shared_ptr<ast::double_expr>(_1)];
+        primary_expr %= int_expr[_val = make_shared_ptr<ast::any_expr>(*_1)];
+//
+//         mul_expr = (qi::int_ >> this->primary_expr)[_val = make_shared_ptr<ast::binop_expr>("*", _2, _1)];
+//
+//         add_expr = mul_expr;
+//         expression %= add_expr;
 
-        qi::on_success(int_expr, annotate(_val, _1, _3));
-        qi::on_success(double_expr, annotate(_val, _1, _3));
-        qi::on_success(primary, annotate(_val, _1, _3));
-        qi::on_success(mul_expr, annotate(_val, _1, _3));
-        qi::on_success(add_expr, annotate(_val, _1, _3));
-        qi::on_success(expression, annotate(_val, _1, _3));
+        //         qi::on_success(int_expr, annotate(_val, _1, _3));
+        //         qi::on_success(double_expr, annotate(_val, _1, _3));
+        //         qi::on_success(primary, annotate(_val, _1, _3));
+        //         qi::on_success(mul_expr, annotate(_val, _1, _3));
+        //         qi::on_success(add_expr, annotate(_val, _1, _3));
+        //         qi::on_success(expression, annotate(_val, _1, _3));
     }
 
    private:
@@ -119,20 +133,20 @@ class callvm_grammar
 
     phx::function<helper::annotation_f<Iter>> annotate;
 
-    rule<ast::int_expr()> int_expr;
-    rule<ast::double_expr()> double_expr;
-    rule<ast::any_expr()> primary;
-    rule<ast::any_expr()> mul_expr;
-    rule<ast::any_expr()> add_expr;
-    rule<ast::any_expr()> expression;
+    rule<std::shared_ptr<ast::int_expr>()> int_expr;
+    rule<std::shared_ptr<ast::double_expr>()> double_expr;
+    rule<std::shared_ptr<ast::any_expr>()> primary_expr;
+    rule<std::shared_ptr<ast::any_expr>()> mul_expr;
+    rule<std::shared_ptr<ast::any_expr>()> add_expr;
+    rule<std::shared_ptr<ast::any_expr>()> expression;
 };
 
-ast::any_expr callvm_parser::parse(std::string const &src) const {
+std::shared_ptr<ast::any_expr> callvm_parser::parse(std::string const &src) const {
     auto begin = helper::line_pos_iterator(std::begin(src));
     using iterator_t = decltype(begin);
     auto end = helper::line_pos_iterator(std::end(src));
     callvm_grammar<iterator_t> grammar(begin);
-    ast::any_expr result;
+    std::shared_ptr<ast::any_expr> result;
 
     if (!qi::phrase_parse(begin, end, grammar, ascii::space, result) ||
         begin != end) {
