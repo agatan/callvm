@@ -15,11 +15,11 @@ namespace callvm {
 namespace ast {
 
 class int_expr;
-class double_expr;
+class float_expr;
 class binop_expr;
 
 using any_expr =
-    boost::variant<int_expr, double_expr, boost::recursive_wrapper<binop_expr>>;
+    boost::variant<int_expr, float_expr, boost::recursive_wrapper<binop_expr>>;
 
 class expr_base : public ast_base {
    public:
@@ -47,17 +47,17 @@ class int_expr : public expr_base {
     int get_val() const { return val; }
 };
 
-class double_expr : public expr_base {
+class float_expr : public expr_base {
    private:
-    double val;
+    float val;
 
    public:
-    double_expr() : val(0) {}
-    double_expr(float x)
+    float_expr() : val(0) {}
+    float_expr(float x)
         : expr_base(semantics::type::primitive_type(
               semantics::type::primitive_type::Float)),
           val(x) {}
-    double get_val() const { return val; }
+    float get_val() const { return val; }
 };
 
 class binop_expr : public expr_base {
@@ -83,7 +83,7 @@ namespace visitor {
 class stringizer : public boost::static_visitor<std::string> {
    public:
     std::string operator()(int_expr const&) const;
-    std::string operator()(double_expr const&) const;
+    std::string operator()(float_expr const&) const;
     std::string operator()(binop_expr const&) const;
 };
 

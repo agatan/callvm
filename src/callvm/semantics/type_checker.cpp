@@ -8,7 +8,7 @@ primitive_type type_inferer::operator()(ast::int_expr&) {
     return primitive_type::Int;
 }
 
-primitive_type type_inferer::operator()(ast::double_expr&) {
+primitive_type type_inferer::operator()(ast::float_expr&) {
     return primitive_type::Float;
 }
 

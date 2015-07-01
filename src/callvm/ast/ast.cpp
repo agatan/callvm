@@ -11,7 +11,7 @@ std::string stringizer::operator()(int_expr const& i) const {
     return std::to_string(i.get_val());
 }
 
-std::string stringizer::operator()(double_expr const& x) const {
+std::string stringizer::operator()(float_expr const& x) const {
     return std::to_string(x.get_val());
 }
 

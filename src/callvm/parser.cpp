@@ -110,11 +110,11 @@ class callvm_grammar
         : callvm_grammar::base_type(expression), annotate(src) {
         int_expr = qi::int_[_val = phx::construct<ast::int_expr>(_1)];
 
-        double_expr =
-            qi::real_parser<double, qi::strict_real_policies<double>>()
-                [_val = phx::construct<ast::double_expr>(_1)];
+        float_expr =
+            qi::real_parser<float, qi::strict_real_policies<float>>()
+                [_val = phx::construct<ast::float_expr>(_1)];
 
-        primary_expr %= int_expr | double_expr | '(' >> expression >> ')';
+        primary_expr %= float_expr | int_expr | '(' >> expression >> ')';
 
         mul_expr = primary_expr[_val = _1] >>
                    *((qi::string("*") | qi::string("/")) >>
@@ -129,7 +129,7 @@ class callvm_grammar
         expression %= add_expr;
 
         qi::on_success(int_expr, annotate(_val, _1, _3));
-        qi::on_success(double_expr, annotate(_val, _1, _3));
+        qi::on_success(float_expr, annotate(_val, _1, _3));
         qi::on_success(primary_expr, annotate(_val, _1, _3));
         qi::on_success(mul_expr, annotate(_val, _1, _3));
         qi::on_success(add_expr, annotate(_val, _1, _3));
@@ -143,7 +143,7 @@ class callvm_grammar
     phx::function<helper::annotation_f<Iter>> annotate;
 
     rule<ast::int_expr()> int_expr;
-    rule<ast::double_expr()> double_expr;
+    rule<ast::float_expr()> float_expr;
     rule<ast::any_expr()> primary_expr;
     rule<ast::any_expr()> mul_expr;
     rule<ast::any_expr()> add_expr;

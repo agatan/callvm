@@ -14,7 +14,7 @@ namespace type {
 class type_inferer : public boost::static_visitor<primitive_type> {
    public:
     primitive_type operator()(ast::int_expr& i);
-    primitive_type operator()(ast::double_expr& x);
+    primitive_type operator()(ast::float_expr& x);
     primitive_type operator()(ast::binop_expr&);
 };
 

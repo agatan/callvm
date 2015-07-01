@@ -37,6 +37,10 @@ bool loop(callvm::codegen::llvm_codegenerator& gen, int cnt) {
         return true;
     }
 
+    if (llvm::verifyModule(*gen.get_module())) {
+        std::cerr << "something goes wrong" << std::endl;
+    }
+
     gen.get_module()->dump();
     return true;
 }
