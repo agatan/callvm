@@ -1,10 +1,14 @@
-#include "type.h"
+#include "type.hpp"
+#include <boost/variant/static_visitor.hpp>
 
 namespace callvm {
 namespace semantics {
 namespace type {
 
-    int unknow_type::next_id = 0;
+    template<typename T>
+    bool is_equal(T const& lhs, any_type const& rhs) {
+        return boost::apply_visitor(equal(), lhs, rhs);
+    }
 
 }  // namespace type
 }  // namespace semantics
