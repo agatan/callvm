@@ -11,27 +11,14 @@ namespace callvm {
 namespace semantics {
 namespace type {
 
-class type_check_error {
+class type_inferer : public boost::static_visitor<primitive_type> {
    public:
-    ast::any_expr& lhs;
-    ast::any_expr& rhs;
+    primitive_type operator()(ast::int_expr& i);
+    primitive_type operator()(ast::double_expr& x);
+    primitive_type operator()(ast::binop_expr&);
 };
 
-class type_checker : public boost::static_visitor<> {
-   public:
-    void operator()(ast::int_expr&) {}
-    void operator()(ast::double_expr&) {}
-    void operator()(ast::binop_expr&);
-};
-
-class type_inferer : public boost::static_visitor<any_type> {
-   public:
-    any_type operator()(ast::int_expr& i);
-    any_type operator()(ast::double_expr& x);
-    any_type operator()(ast::binop_expr&);
-};
-
-void type_check(ast::any_expr& ast);
+primitive_type infer_expression_type(ast::any_expr& ast);
 
 }  // namespace type
 }  // namespace semantics
