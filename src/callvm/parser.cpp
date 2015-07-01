@@ -114,7 +114,7 @@ class callvm_grammar
             qi::real_parser<double, qi::strict_real_policies<double>>()
                 [_val = phx::construct<ast::double_expr>(_1)];
 
-        primary_expr %= int_expr | double_expr | '(' >> expression >> ')';
+        primary_expr %= double_expr | int_expr | '(' >> expression >> ')';
 
         mul_expr = primary_expr[_val = _1] >>
                    *((qi::string("*") | qi::string("/")) >>

@@ -16,7 +16,7 @@ namespace codegen {
 class llvm_codegenerator final : public boost::static_visitor<llvm::Value*> {
    public:
     llvm_codegenerator(std::string const&, llvm::LLVMContext&);
-    bool generate(ast::any_expr const&, std::string const&);
+    bool generate(ast::any_expr&, std::string const&);
     llvm::Module* get_module() { return &module; }
     llvm::IRBuilder<>& get_builder() { return builder; }
 
