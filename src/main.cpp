@@ -12,8 +12,11 @@
 bool loop(callvm::codegen::llvm_codegenerator&, int);
 
 int main(int argc, char const* argv[]) {
-    callvm::codegen::llvm_codegenerator gen("toplevel",
-                                            llvm::getGlobalContext());
+    static llvm::LLVMContext myGlobalContext;
+
+    callvm::codegen::llvm_codegenerator gen("Toplevel",
+					    myGlobalContext);
+
     int cnt = 0;
     while (loop(gen, cnt++));
 
@@ -41,6 +44,6 @@ bool loop(callvm::codegen::llvm_codegenerator& gen, int cnt) {
         std::cerr << "something goes wrong" << std::endl;
     }
 
-    gen.get_module()->dump();
+    gen.get_module()->print(llvm::errs(), nullptr);
     return true;
 }
